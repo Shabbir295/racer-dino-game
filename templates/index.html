@@ -1,0 +1,2132 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RACER-DINO Game</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.5s ease, color 0.3s ease;
+        }
+
+        :root {
+            --primary-color: #00ff88;
+            --secondary-color: #00cc6a;
+            --dark-bg: #121212;
+            --dark-card: #1e1e1e;
+            --light-bg: #ffffcc;
+            --light-card: #ffffff;
+            --text-dark: #222222;
+            --text-light: #ffffff;
+            --outline-color: #000000;
+        }
+
+        body {
+            overflow-x: hidden;
+        }
+
+        .dark-mode {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+        }
+
+        .light-mode {
+            background-color: var(--light-bg);
+            color: var(--text-dark);
+        }
+
+        /* Splash Screen */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
+            animation: fadeOut 1s forwards 2.5s;
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .game-logo {
+            font-size: 4.5rem;
+            font-weight: 900;
+            background: linear-gradient(to right, #00ff88, #00cc6a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .dino-logo {
+            width: 120px;
+            height: 120px;
+            position: relative;
+        }
+
+        .dino-logo svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 136, 0.5));
+        }
+
+        .loading-bar {
+            width: 300px;
+            height: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            margin-top: 30px;
+            overflow: hidden;
+        }
+
+        .loading-progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(to right, #00ff88, #00cc6a);
+            border-radius: 10px;
+            animation: load 2s ease-in-out forwards;
+        }
+
+        @keyframes load {
+            to { width: 100%; }
+        }
+
+        /* Login Container */
+        .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 30px;
+            background-color: var(--dark-card);
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 0 5px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            border: 2px solid var(--primary-color);
+        }
+
+        .theme-toggle.light {
+            background-color: var(--light-card);
+        }
+
+        .toggle-circle {
+            width: 22px;
+            height: 22px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            transform: translateX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .theme-toggle.dark .toggle-circle {
+            transform: translateX(30px);
+        }
+
+        .theme-toggle i {
+            position: absolute;
+            font-size: 14px;
+            color: #fff;
+        }
+
+        .theme-toggle .fa-sun {
+            left: 8px;
+            color: #ffcc00;
+        }
+
+        .theme-toggle .fa-moon {
+            right: 8px;
+            color: #ccc;
+        }
+
+        .login-form {
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.8s ease-out;
+            border: 3px solid var(--primary-color);
+        }
+
+        .dark-mode .login-form {
+            background-color: var(--dark-card);
+        }
+
+        .light-mode .login-form {
+            background-color: var(--light-card);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-title {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 2px solid #555;
+            font-size: 16px;
+        }
+
+        .dark-mode .form-control {
+            background-color: #2a2a2a;
+            color: white;
+            border-color: #444;
+        }
+
+        .light-mode .form-control {
+            background-color: #f9f9f9;
+            color: #333;
+            border-color: #ccc;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.2);
+        }
+
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .row .form-group {
+            flex: 1;
+        }
+
+        .gender-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+        }
+
+        .gender-option {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid #555;
+            transition: all 0.3s;
+        }
+
+        .dark-mode .gender-option {
+            background-color: #2a2a2a;
+        }
+
+        .light-mode .gender-option {
+            background-color: #f9f9f9;
+        }
+
+        .gender-option.active {
+            border-color: var(--primary-color);
+            background-color: rgba(0, 255, 136, 0.1);
+        }
+
+        .error-message {
+            color: #ff4444;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        /* Success Popup */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            display: none;
+        }
+
+        .popup-content {
+            background-color: var(--dark-card);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border: 3px solid var(--primary-color);
+            animation: popIn 0.5s ease-out;
+        }
+
+        .light-mode .popup-content {
+            background-color: var(--light-card);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .popup-icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .popup-title {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .popup-message {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+        }
+
+        .popup-btn {
+            padding: 12px 30px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .popup-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Game Container */
+        .game-container {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .game-title {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        .score-display {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 8px 15px;
+            border-radius: 10px;
+            color: white;
+            border: 2px solid var(--primary-color);
+        }
+
+        .light-mode .score-display {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #000;
+        }
+
+        .game-header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .game-theme-toggle {
+            width: 50px;
+            height: 25px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 25px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 0 4px;
+            border: 2px solid var(--primary-color);
+        }
+
+        .light-mode .game-theme-toggle {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .game-toggle-circle {
+            width: 17px;
+            height: 17px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        /* Rating Menu Styles */
+        .rating-menu-btn {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .light-mode .rating-menu-btn {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .rating-menu-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+        }
+
+        .rating-menu-options {
+            position: absolute;
+            top: 70px;
+            right: 140px;
+            background-color: var(--dark-card);
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            display: none;
+            border: 2px solid var(--primary-color);
+            overflow: hidden;
+            animation: slideDown 0.3s ease;
+        }
+
+        .light-mode .rating-menu-options {
+            background-color: var(--light-card);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .rating-option {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.1);
+        }
+
+        .rating-option:last-child {
+            border-bottom: none;
+        }
+
+        .rating-option:hover {
+            background-color: rgba(0, 255, 136, 0.1);
+        }
+
+        .rating-option i {
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            width: 20px;
+        }
+
+        .rating-option span {
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        /* Rating Form Styles */
+        .rating-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            display: none;
+        }
+
+        .rating-popup-content {
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 15px;
+            padding: 0;
+            animation: popIn 0.5s ease-out;
+            border: 3px solid var(--primary-color);
+        }
+
+        .dark-mode .rating-popup-content {
+            background-color: var(--dark-card);
+        }
+
+        .light-mode .rating-popup-content {
+            background-color: var(--light-card);
+        }
+
+        .rating-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 2px solid var(--primary-color);
+        }
+
+        .rating-popup-header h2 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-rating-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .close-rating-btn:hover {
+            background-color: rgba(255, 0, 0, 0.1);
+            transform: rotate(90deg);
+        }
+
+        #ratingForm {
+            padding: 25px;
+        }
+
+        .rating-submit-btn {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Stars Rating */
+        .stars-rating {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .star {
+            font-size: 2.5rem;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .star:hover {
+            transform: scale(1.2);
+        }
+
+        .star.active {
+            color: #FFD700;
+            text-shadow: 0 0 20px #FFD700;
+        }
+
+        .rating-text {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: var(--primary-color);
+            font-weight: 600;
+            text-align: center;
+            min-height: 24px;
+        }
+
+        /* Rating Success Popup */
+        .rating-success-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 4000;
+            display: none;
+        }
+
+        .rating-success-content {
+            background-color: var(--dark-card);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border: 3px solid var(--primary-color);
+            animation: popIn 0.5s ease-out;
+        }
+
+        .light-mode .rating-success-content {
+            background-color: var(--light-card);
+        }
+
+        .success-icon {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .rating-success-content h2 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+
+        .rating-success-content p {
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+        }
+
+        /* Share Popup */
+        .share-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5000;
+            display: none;
+        }
+
+        .share-popup-content {
+            background-color: var(--dark-card);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            border: 3px solid var(--primary-color);
+            animation: popIn 0.5s ease-out;
+        }
+
+        .light-mode .share-popup-content {
+            background-color: var(--light-card);
+        }
+
+        .share-popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .share-popup-header h2 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-share-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .close-share-btn:hover {
+            background-color: rgba(255, 0, 0, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .share-link-container {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            border: 2px solid var(--primary-color);
+        }
+
+        .share-link {
+            font-size: 1rem;
+            word-break: break-all;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-family: monospace;
+        }
+
+        .light-mode .share-link {
+            background-color: rgba(0, 0, 0, 0.1);
+            color: #333;
+        }
+
+        .copy-btn {
+            padding: 10px 25px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 0 auto;
+        }
+
+        .copy-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .share-success {
+            margin-top: 15px;
+            color: var(--primary-color);
+            font-weight: 600;
+            font-size: 1rem;
+            min-height: 24px;
+        }
+
+        .share-message {
+            margin: 15px 0;
+            font-size: 1.1rem;
+        }
+
+        .social-share {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.3s;
+            color: white;
+        }
+
+        .social-icon:hover {
+            transform: scale(1.1);
+        }
+
+        .facebook { background-color: #1877F2; }
+        .twitter { background-color: #1DA1F2; }
+        .whatsapp { background-color: #25D366; }
+
+        .game-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .start-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            text-align: center;
+            text-shadow: 0 0 15px rgba(0, 0, 0, 0.8);
+            z-index: 50;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .game-controls {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 100;
+        }
+
+        .control-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: 3px solid var(--primary-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: var(--primary-color);
+            cursor: pointer;
+            user-select: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .light-mode .control-btn {
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .game-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 10px;
+            background-color: #0a3d62;
+            color: white;
+            text-align: center;
+            font-size: 1rem;
+            z-index: 150;
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <!-- Splash Screen -->
+    <div class="splash-screen">
+        <div class="logo-container">
+            <h1 class="game-logo">RACER-DINO</h1>
+            <div class="dino-logo">
+                <svg viewBox="0 0 100 100">
+                    <path d="M30,70 L40,60 L50,70 L60,60 L70,70" stroke="#00ff88" stroke-width="4" fill="none" stroke-linecap="round"/>
+                    <circle cx="35" cy="40" r="8" fill="#00ff88"/>
+                    <circle cx="65" cy="40" r="8" fill="#00ff88"/>
+                    <path d="M25,30 Q50,10 75,30" stroke="#00ff88" stroke-width="4" fill="none"/>
+                    <rect x="20" y="70" width="60" height="10" fill="#00ff88"/>
+                    <path d="M15,80 L85,80" stroke="#00ff88" stroke-width="3" stroke-linecap="round"/>
+                </svg>
+            </div>
+        </div>
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+    </div>
+
+    <!-- Login Container -->
+    <div class="container">
+        <div class="theme-toggle dark" id="themeToggle">
+            <div class="toggle-circle"></div>
+            <i class="fas fa-sun"></i>
+            <i class="fas fa-moon"></i>
+        </div>
+        
+        <div class="login-form">
+            <h2 class="login-title">RACER-DINO Login</h2>
+            <form id="loginForm">
+                <div class="row">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" class="form-control" required>
+                        <div class="error-message" id="nameError">Please enter your full name</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="age">Age</label>
+                        <input type="number" id="age" class="form-control" min="1" max="100" required>
+                        <div class="error-message" id="ageError">You must be at least 7 years old to play</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" class="form-control" required>
+                    <div class="error-message" id="emailError">Please enter a valid email address</div>
+                </div>
+                
+                <div class="row">
+                    <div class="form-group">
+                        <label for="country">Country/Region</label>
+                        <select id="country" class="form-control" required>
+                            <option value="">Select Country</option>
+                            <option value="Pakistan">Pakistan</option>
+                            <option value="India">India</option>
+                            <option value="USA">USA</option>
+                            <option value="UK">UK</option>
+                            <option value="UAE">UAE</option>
+                            <option value="Canada">Canada</option>
+                            <option value="Australia">Australia</option>
+                        </select>
+                        <div class="error-message" id="countryError">Please select your country</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" class="form-control" required minlength="6">
+                        <div class="error-message" id="passwordError">Password must be at least 6 characters</div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Gender</label>
+                    <div class="gender-options">
+                        <div class="gender-option" data-value="male">Male</div>
+                        <div class="gender-option" data-value="female">Female</div>
+                        <div class="gender-option" data-value="other">Other</div>
+                    </div>
+                    <input type="hidden" id="gender" required>
+                    <div class="error-message" id="genderError">Please select your gender</div>
+                </div>
+                
+                <button type="submit" class="submit-btn">START RACING</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Success Popup -->
+    <div class="popup-overlay" id="successPopup">
+        <div class="popup-content">
+            <div class="popup-icon">
+                <i class="fas fa-trophy"></i>
+            </div>
+            <h2 class="popup-title">Congratulations!</h2>
+            <p class="popup-message">You were successfully logged into Dino-Racer!</p>
+            <button class="popup-btn" id="startGameBtn">START GAME</button>
+        </div>
+    </div>
+
+    <!-- Game Container -->
+    <div class="game-container" id="gameContainer">
+        <div class="game-header">
+            <div class="game-title">RACER-DINO</div>
+            <div class="score-display">Score: <span id="score">0</span></div>
+            <div class="game-header-controls">
+                <!-- Rating Menu Button -->
+                <div class="rating-menu-btn" id="ratingMenuBtn">
+                    <i class="fas fa-ellipsis-v"></i>
+                </div>
+                <div class="game-theme-toggle" id="gameThemeToggle">
+                    <div class="game-toggle-circle"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rating Menu Options -->
+        <div class="rating-menu-options" id="ratingMenuOptions">
+            <div class="rating-option" id="rateUsBtn">
+                <i class="fas fa-star"></i>
+                <span>Rate Us</span>
+            </div>
+            <div class="rating-option" id="shareGameBtn">
+                <i class="fas fa-share-alt"></i>
+                <span>Share Game</span>
+            </div>
+            <div class="rating-option" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </div>
+        </div>
+        
+        <canvas class="game-canvas" id="gameCanvas"></canvas>
+        
+        <div class="start-message" id="startMessage">START DINO RACE</div>
+        
+        <div class="game-controls">
+            <div class="control-btn" id="runBtn">
+                <i class="fas fa-running"></i>
+            </div>
+            <div class="control-btn" id="jumpBtn">
+                <i class="fas fa-arrow-up"></i>
+            </div>
+        </div>
+        
+        <div class="game-footer">
+            This game was developed by Shabbir-developer
+        </div>
+    </div>
+
+    <!-- Rating Form Popup -->
+    <div class="rating-popup-overlay" id="ratingPopup">
+        <div class="rating-popup-content">
+            <div class="rating-popup-header">
+                <h2><i class="fas fa-star"></i> Rate RACER-DINO</h2>
+                <button class="close-rating-btn" id="closeRatingBtn">&times;</button>
+            </div>
+            
+            <form id="ratingForm">
+                <div class="form-group">
+                    <label for="ratingName">Full Name *</label>
+                    <input type="text" id="ratingName" class="form-control" required>
+                    <div class="error-message" id="ratingNameError">Please enter your full name</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ratingContact">Contact Number *</label>
+                    <input type="tel" id="ratingContact" class="form-control" required pattern="[0-9]{10,15}">
+                    <div class="error-message" id="ratingContactError">Please enter valid contact number (10-15 digits)</div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Rate Your Experience *</label>
+                    <div class="stars-rating">
+                        <span class="star" data-value="1">★</span>
+                        <span class="star" data-value="2">★</span>
+                        <span class="star" data-value="3">★</span>
+                        <span class="star" data-value="4">★</span>
+                        <span class="star" data-value="5">★</span>
+                    </div>
+                    <input type="hidden" id="ratingValue" required>
+                    <div class="error-message" id="ratingError">Please select a rating</div>
+                    <div class="rating-text" id="ratingText">Click stars to rate</div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="ratingDescription">Your Feedback *</label>
+                    <textarea id="ratingDescription" class="form-control" rows="4" required placeholder="Share your experience with RACER-DINO..."></textarea>
+                    <div class="error-message" id="ratingDescError">Please enter your feedback</div>
+                </div>
+                
+                <button type="submit" class="submit-btn rating-submit-btn">
+                    <i class="fas fa-paper-plane"></i> SUBMIT RATING
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Rating Success Popup -->
+    <div class="rating-success-popup" id="ratingSuccessPopup">
+        <div class="rating-success-content">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2>Thank You!</h2>
+            <p>Your rating form was successfully submitted</p>
+            <button class="popup-btn" id="closeSuccessBtn">OK</button>
+        </div>
+    </div>
+
+    <!-- Share Game Popup -->
+    <div class="share-popup-overlay" id="sharePopup">
+        <div class="share-popup-content">
+            <div class="share-popup-header">
+                <h2><i class="fas fa-share-alt"></i> Share RACER-DINO</h2>
+                <button class="close-share-btn" id="closeShareBtn">&times;</button>
+            </div>
+            
+            <p class="share-message">Share this game link with your friends:</p>
+            
+            <div class="share-link-container">
+                <div class="share-link" id="shareLink">https://shabbir-developer.github.io/racer-dino-game</div>
+                <button class="copy-btn" id="copyLinkBtn">
+                    <i class="fas fa-copy"></i> COPY LINK
+                </button>
+                <div class="share-success" id="shareSuccess"></div>
+            </div>
+            
+            <p class="share-message">Or share directly on social media:</p>
+            
+            <div class="social-share">
+                <div class="social-icon facebook" id="shareFacebook">
+                    <i class="fab fa-facebook-f"></i>
+                </div>
+                <div class="social-icon twitter" id="shareTwitter">
+                    <i class="fab fa-twitter"></i>
+                </div>
+                <div class="social-icon whatsapp" id="shareWhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Wait for page to load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Theme toggle functionality
+            const themeToggle = document.getElementById('themeToggle');
+            const gameThemeToggle = document.getElementById('gameThemeToggle');
+            const body = document.body;
+            
+            // Check for saved theme or prefer-color-scheme
+            const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+            const currentTheme = localStorage.getItem('theme');
+            
+            if (currentTheme === 'light' || (!currentTheme && !prefersDarkScheme.matches)) {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+                themeToggle.classList.remove('dark');
+                gameThemeToggle.classList.remove('dark');
+            }
+            
+            // Login page theme toggle
+            themeToggle.addEventListener('click', function() {
+                const isDark = body.classList.contains('dark-mode');
+                if (isDark) {
+                    body.classList.remove('dark-mode');
+                    body.classList.add('light-mode');
+                    themeToggle.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    body.classList.remove('light-mode');
+                    body.classList.add('dark-mode');
+                    themeToggle.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+            
+            // Game page theme toggle
+            gameThemeToggle.addEventListener('click', function() {
+                const isDark = body.classList.contains('dark-mode');
+                if (isDark) {
+                    body.classList.remove('dark-mode');
+                    body.classList.add('light-mode');
+                    gameThemeToggle.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    body.classList.remove('light-mode');
+                    body.classList.add('dark-mode');
+                    gameThemeToggle.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+            
+            // Gender selection
+            const genderOptions = document.querySelectorAll('.gender-option');
+            const genderInput = document.getElementById('gender');
+            
+            genderOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    genderOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    genderInput.value = this.getAttribute('data-value');
+                });
+            });
+            
+            // Form validation and submission
+            const loginForm = document.getElementById('loginForm');
+            const successPopup = document.getElementById('successPopup');
+            const startGameBtn = document.getElementById('startGameBtn');
+            const gameContainer = document.getElementById('gameContainer');
+            const container = document.querySelector('.container');
+            
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Reset errors
+                document.querySelectorAll('.error-message').forEach(error => {
+                    error.style.display = 'none';
+                });
+                
+                let isValid = true;
+                
+                // Validate name
+                const name = document.getElementById('name').value.trim();
+                if (!name) {
+                    document.getElementById('nameError').style.display = 'block';
+                    isValid = false;
+                }
+                
+                // Validate age (must be 7 or above)
+                const age = parseInt(document.getElementById('age').value);
+                if (!age || age < 7) {
+                    document.getElementById('ageError').style.display = 'block';
+                    isValid = false;
+                }
+                
+                // Validate email
+                const email = document.getElementById('email').value.trim();
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!email || !emailRegex.test(email)) {
+                    document.getElementById('emailError').style.display = 'block';
+                    isValid = false;
+                }
+                
+                // Validate country
+                const country = document.getElementById('country').value;
+                if (!country) {
+                    document.getElementById('countryError').style.display = 'block';
+                    isValid = false;
+                }
+                
+                // Validate password
+                const password = document.getElementById('password').value;
+                if (!password || password.length < 6) {
+                    document.getElementById('passwordError').style.display = 'block';
+                    isValid = false;
+                }
+                
+                // Validate gender
+                const gender = genderInput.value;
+                if (!gender) {
+                    document.getElementById('genderError').style.display = 'block';
+                    isValid = false;
+                }
+                
+                // If form is valid, show success popup
+                if (isValid) {
+                    successPopup.style.display = 'flex';
+                }
+            });
+            
+            // Start game button
+            startGameBtn.addEventListener('click', function() {
+                successPopup.style.display = 'none';
+                container.style.display = 'none';
+                gameContainer.style.display = 'block';
+                initGame();
+            });
+            
+            // Rating System JavaScript
+            // Rating menu functionality
+            const ratingMenuBtn = document.getElementById('ratingMenuBtn');
+            const ratingMenuOptions = document.getElementById('ratingMenuOptions');
+            const rateUsBtn = document.getElementById('rateUsBtn');
+            const shareGameBtn = document.getElementById('shareGameBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const ratingPopup = document.getElementById('ratingPopup');
+            const closeRatingBtn = document.getElementById('closeRatingBtn');
+            const ratingForm = document.getElementById('ratingForm');
+            const ratingSuccessPopup = document.getElementById('ratingSuccessPopup');
+            const closeSuccessBtn = document.getElementById('closeSuccessBtn');
+            
+            // Share functionality
+            const sharePopup = document.getElementById('sharePopup');
+            const closeShareBtn = document.getElementById('closeShareBtn');
+            const copyLinkBtn = document.getElementById('copyLinkBtn');
+            const shareLink = document.getElementById('shareLink');
+            const shareSuccess = document.getElementById('shareSuccess');
+            const shareFacebook = document.getElementById('shareFacebook');
+            const shareTwitter = document.getElementById('shareTwitter');
+            const shareWhatsApp = document.getElementById('shareWhatsApp');
+            
+            // Toggle rating menu
+            if (ratingMenuBtn) {
+                ratingMenuBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    ratingMenuOptions.style.display = ratingMenuOptions.style.display === 'block' ? 'none' : 'block';
+                });
+            }
+            
+            // Close rating menu when clicking outside
+            document.addEventListener('click', function() {
+                if (ratingMenuOptions) {
+                    ratingMenuOptions.style.display = 'none';
+                }
+            });
+            
+            // Open rating form
+            if (rateUsBtn) {
+                rateUsBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    ratingMenuOptions.style.display = 'none';
+                    ratingPopup.style.display = 'flex';
+                });
+            }
+            
+            // Open share popup
+            if (shareGameBtn) {
+                shareGameBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    ratingMenuOptions.style.display = 'none';
+                    sharePopup.style.display = 'flex';
+                    shareSuccess.textContent = '';
+                    
+                    // Generate GitHub Pages game URL
+                    // USER KO YE LINK BADME APNA GITHUB USERNAME SE UPDATE KARNA HOGA
+                    const githubUsername = "shabbir-developer"; // <-- APNA GitHub username yahan daalna
+                    const gameUrl = `https://${githubUsername}.github.io/racer-dino-game`;
+                    
+                    shareLink.textContent = gameUrl;
+                    
+                    // Social media sharing ke liye message
+                    const shareMessage = "🎮 Play RACER-DINO Game Now!\n\n" +
+                                       "Awesome dinosaur racing adventure with:\n" +
+                                       "✅ Login System\n✅ Rating System\n✅ Dark/Light Mode\n" +
+                                       "✅ Score Tracking\n✅ Mobile Friendly\n\n" +
+                                       "Click to play: " + gameUrl;
+                });
+            }
+            
+            // Logout functionality
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    ratingMenuOptions.style.display = 'none';
+                    
+                    // Show confirmation
+                    if (confirm("Are you sure you want to logout?")) {
+                        // Reset game and show login form
+                        gameContainer.style.display = 'none';
+                        container.style.display = 'flex';
+                        
+                        // Reset login form
+                        loginForm.reset();
+                        genderInput.value = '';
+                        document.querySelectorAll('.gender-option').forEach(opt => {
+                            opt.classList.remove('active');
+                        });
+                        
+                        // Reset all error messages
+                        document.querySelectorAll('.error-message').forEach(error => {
+                            error.style.display = 'none';
+                        });
+                    }
+                });
+            }
+            
+            // Close rating form
+            if (closeRatingBtn) {
+                closeRatingBtn.addEventListener('click', function() {
+                    ratingPopup.style.display = 'none';
+                    resetRatingForm();
+                });
+            }
+            
+            // Close share popup
+            if (closeShareBtn) {
+                closeShareBtn.addEventListener('click', function() {
+                    sharePopup.style.display = 'none';
+                    shareSuccess.textContent = '';
+                });
+            }
+            
+            // Copy link to clipboard
+            if (copyLinkBtn) {
+                copyLinkBtn.addEventListener('click', function() {
+                    const linkText = shareLink.textContent;
+                    
+                    // Use Clipboard API if available
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(linkText)
+                            .then(() => {
+                                shareSuccess.textContent = "Link copied to clipboard!";
+                                copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> COPIED!';
+                                copyLinkBtn.style.background = 'linear-gradient(to right, #00cc6a, #00aa55)';
+                                
+                                // Reset button after 2 seconds
+                                setTimeout(() => {
+                                    copyLinkBtn.innerHTML = '<i class="fas fa-copy"></i> COPY LINK';
+                                    copyLinkBtn.style.background = 'linear-gradient(to right, var(--primary-color), var(--secondary-color))';
+                                }, 2000);
+                            })
+                            .catch(err => {
+                                console.error('Failed to copy: ', err);
+                                shareSuccess.textContent = "Failed to copy link";
+                            });
+                    } else {
+                        // Fallback for older browsers
+                        const textArea = document.createElement('textarea');
+                        textArea.value = linkText;
+                        document.body.appendChild(textArea);
+                        textArea.select();
+                        try {
+                            document.execCommand('copy');
+                            shareSuccess.textContent = "Link copied to clipboard!";
+                            copyLinkBtn.innerHTML = '<i class="fas fa-check"></i> COPIED!';
+                            copyLinkBtn.style.background = 'linear-gradient(to right, #00cc6a, #00aa55)';
+                            
+                            // Reset button after 2 seconds
+                            setTimeout(() => {
+                                copyLinkBtn.innerHTML = '<i class="fas fa-copy"></i> COPY LINK';
+                                copyLinkBtn.style.background = 'linear-gradient(to right, var(--primary-color), var(--secondary-color))';
+                            }, 2000);
+                        } catch (err) {
+                            console.error('Fallback: Failed to copy: ', err);
+                            shareSuccess.textContent = "Failed to copy link";
+                        }
+                        document.body.removeChild(textArea);
+                    }
+                });
+            }
+            
+            // Social media sharing - Updated for GitHub Pages
+            if (shareFacebook) {
+                shareFacebook.addEventListener('click', function() {
+                    const url = encodeURIComponent(shareLink.textContent);
+                    const text = encodeURIComponent("🎮 Play RACER-DINO Game - Awesome dinosaur racing adventure! ");
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`, '_blank');
+                });
+            }
+            
+            if (shareTwitter) {
+                shareTwitter.addEventListener('click', function() {
+                    const url = encodeURIComponent(shareLink.textContent);
+                    const text = encodeURIComponent("Playing RACER-DINO game! Check it out: ");
+                    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+                });
+            }
+            
+            if (shareWhatsApp) {
+                shareWhatsApp.addEventListener('click', function() {
+                    const url = encodeURIComponent(shareLink.textContent);
+                    const text = encodeURIComponent("Check out this awesome RACER-DINO game: ");
+                    window.open(`https://wa.me/?text=${text}${url}`, '_blank');
+                });
+            }
+            
+            // Stars rating functionality
+            const stars = document.querySelectorAll('.star');
+            const ratingValue = document.getElementById('ratingValue');
+            const ratingText = document.getElementById('ratingText');
+            
+            const ratingTexts = {
+                1: "Poor - Very disappointed",
+                2: "Fair - Could be better",
+                3: "Good - Met expectations",
+                4: "Very Good - Happy with it",
+                5: "Excellent - Absolutely love it!"
+            };
+            
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const value = parseInt(this.getAttribute('data-value'));
+                    ratingValue.value = value;
+                    
+                    // Update stars
+                    stars.forEach(s => {
+                        if (parseInt(s.getAttribute('data-value')) <= value) {
+                            s.classList.add('active');
+                        } else {
+                            s.classList.remove('active');
+                        }
+                    });
+                    
+                    // Update rating text
+                    ratingText.textContent = ratingTexts[value];
+                });
+                
+                // Hover effect
+                star.addEventListener('mouseover', function() {
+                    const value = parseInt(this.getAttribute('data-value'));
+                    
+                    stars.forEach(s => {
+                        if (parseInt(s.getAttribute('data-value')) <= value) {
+                            s.style.color = '#FFD700';
+                        } else {
+                            s.style.color = '#666';
+                        }
+                    });
+                });
+                
+                star.addEventListener('mouseout', function() {
+                    const currentRating = parseInt(ratingValue.value) || 0;
+                    
+                    stars.forEach(s => {
+                        const value = parseInt(s.getAttribute('data-value'));
+                        if (value <= currentRating) {
+                            s.style.color = s.classList.contains('active') ? '#FFD700' : '#666';
+                        } else {
+                            s.style.color = '#666';
+                        }
+                    });
+                });
+            });
+            
+            // Rating form submission
+            if (ratingForm) {
+                ratingForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Reset errors
+                    document.querySelectorAll('#ratingForm .error-message').forEach(error => {
+                        error.style.display = 'none';
+                    });
+                    
+                    let isValid = true;
+                    
+                    // Validate name
+                    const name = document.getElementById('ratingName').value.trim();
+                    if (!name) {
+                        document.getElementById('ratingNameError').style.display = 'block';
+                        isValid = false;
+                    }
+                    
+                    // Validate contact
+                    const contact = document.getElementById('ratingContact').value.trim();
+                    const contactRegex = /^[0-9]{10,15}$/;
+                    if (!contact || !contactRegex.test(contact)) {
+                        document.getElementById('ratingContactError').style.display = 'block';
+                        isValid = false;
+                    }
+                    
+                    // Validate rating
+                    const rating = ratingValue.value;
+                    if (!rating) {
+                        document.getElementById('ratingError').style.display = 'block';
+                        isValid = false;
+                    }
+                    
+                    // Validate description
+                    const description = document.getElementById('ratingDescription').value.trim();
+                    if (!description) {
+                        document.getElementById('ratingDescError').style.display = 'block';
+                        isValid = false;
+                    }
+                    
+                    // If valid, show success popup
+                    if (isValid) {
+                        ratingPopup.style.display = 'none';
+                        ratingSuccessPopup.style.display = 'flex';
+                        resetRatingForm();
+                        
+                        // Log rating data (in real app, send to server)
+                        console.log('Rating Submitted:', {
+                            name: name,
+                            contact: contact,
+                            rating: rating,
+                            description: description,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                });
+            }
+            
+            // Close success popup
+            if (closeSuccessBtn) {
+                closeSuccessBtn.addEventListener('click', function() {
+                    ratingSuccessPopup.style.display = 'none';
+                });
+            }
+            
+            // Reset rating form
+            function resetRatingForm() {
+                if (ratingForm) ratingForm.reset();
+                if (ratingValue) ratingValue.value = '';
+                if (ratingText) ratingText.textContent = 'Click stars to rate';
+                stars.forEach(star => {
+                    star.classList.remove('active');
+                    star.style.color = '#666';
+                });
+                document.querySelectorAll('#ratingForm .error-message').forEach(error => {
+                    error.style.display = 'none';
+                });
+            }
+            
+            // Close popups with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (ratingPopup.style.display === 'flex') {
+                        ratingPopup.style.display = 'none';
+                        resetRatingForm();
+                    }
+                    if (ratingSuccessPopup.style.display === 'flex') {
+                        ratingSuccessPopup.style.display = 'none';
+                    }
+                    if (sharePopup.style.display === 'flex') {
+                        sharePopup.style.display = 'none';
+                        shareSuccess.textContent = '';
+                    }
+                    if (ratingMenuOptions.style.display === 'block') {
+                        ratingMenuOptions.style.display = 'none';
+                    }
+                }
+            });
+        });
+        
+        // Game logic
+        function initGame() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const startMessage = document.getElementById('startMessage');
+            const scoreElement = document.getElementById('score');
+            const jumpBtn = document.getElementById('jumpBtn');
+            const runBtn = document.getElementById('runBtn');
+            
+            // Set canvas dimensions
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Game variables
+            let score = 0;
+            let gameStarted = false;
+            let gameSpeed = 5;
+            let isJumping = false;
+            let jumpVelocity = 0;
+            let gravity = 0.5;
+            let dinoY = canvas.height * 0.7;
+            const groundHeight = 100;
+            const dinoWidth = 60;
+            const dinoHeight = 80;
+            let dinoX = 100;
+            
+            // Obstacles
+            let obstacles = [];
+            let obstacleTimer = 0;
+            let obstacleInterval = 120;
+            
+            // Trees
+            let trees = [];
+            let treeTimer = 0;
+            let treeInterval = 80;
+            
+            // Clouds/Crows
+            let clouds = [];
+            let cloudTimer = 0;
+            let cloudInterval = 150;
+            
+            // Game loop
+            function gameLoop() {
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw background
+                drawBackground();
+                
+                // Draw ground
+                drawGround();
+                
+                // Draw trees
+                drawTrees();
+                
+                // Draw clouds/crows
+                drawClouds();
+                
+                // Draw obstacles
+                drawObstacles();
+                
+                // Draw dinosaur
+                drawDino();
+                
+                // Update score
+                if (gameStarted) {
+                    score += 0.5;
+                    scoreElement.textContent = Math.floor(score);
+                    
+                    // Increase game speed over time
+                    gameSpeed = 5 + Math.floor(score / 100);
+                }
+                
+                // Update game state
+                updateGame();
+                
+                requestAnimationFrame(gameLoop);
+            }
+            
+            // Draw background
+            function drawBackground() {
+                const isDark = document.body.classList.contains('dark-mode');
+                
+                if (isDark) {
+                    // Dark theme - night sky
+                    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    gradient.addColorStop(0, '#0a0a2a');
+                    gradient.addColorStop(1, '#121212');
+                    ctx.fillStyle = gradient;
+                } else {
+                    // Light theme - light yellow
+                    ctx.fillStyle = '#ffffcc';
+                }
+                
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw stars in dark mode
+                if (isDark) {
+                    ctx.fillStyle = 'white';
+                    for (let i = 0; i < 50; i++) {
+                        const x = (i * 40 + score * 0.5) % canvas.width;
+                        const y = (i * 20) % (canvas.height * 0.7);
+                        const size = Math.random() * 2 + 1;
+                        ctx.beginPath();
+                        ctx.arc(x, y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+            
+            // Draw ground
+            function drawGround() {
+                const isDark = document.body.classList.contains('dark-mode');
+                const groundY = canvas.height - groundHeight;
+                
+                // Ground color
+                ctx.fillStyle = isDark ? '#333' : '#8B4513';
+                ctx.fillRect(0, groundY, canvas.width, groundHeight);
+                
+                // Ground pattern
+                ctx.fillStyle = isDark ? '#444' : '#A0522D';
+                for (let i = 0; i < canvas.width; i += 30) {
+                    ctx.fillRect(i, groundY, 15, 5);
+                }
+                
+                // Ground outline
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, groundY);
+                ctx.lineTo(canvas.width, groundY);
+                ctx.stroke();
+            }
+            
+            // Draw trees
+            function drawTrees() {
+                // Add new trees
+                treeTimer++;
+                if (treeTimer > treeInterval) {
+                    trees.push({
+                        x: canvas.width,
+                        width: 40 + Math.random() * 30,
+                        height: 80 + Math.random() * 60,
+                        color: Math.random() > 0.5 ? '#2E8B57' : '#228B22'
+                    });
+                    treeTimer = 0;
+                    treeInterval = 60 + Math.random() * 80;
+                }
+                
+                // Draw and update trees
+                const isDark = document.body.classList.contains('dark-mode');
+                const groundY = canvas.height - groundHeight;
+                
+                for (let i = trees.length - 1; i >= 0; i--) {
+                    const tree = trees[i];
+                    
+                    // Draw tree trunk
+                    ctx.fillStyle = isDark ? '#8B4513' : '#8B4513';
+                    ctx.fillRect(tree.x, groundY - tree.height * 0.3, tree.width * 0.3, tree.height * 0.3);
+                    
+                    // Draw tree leaves
+                    ctx.fillStyle = tree.color;
+                    ctx.beginPath();
+                    ctx.arc(tree.x + tree.width * 0.15, groundY - tree.height * 0.3, tree.width * 0.7, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    // Tree outline
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(tree.x, groundY - tree.height * 0.3, tree.width * 0.3, tree.height * 0.3);
+                    ctx.beginPath();
+                    ctx.arc(tree.x + tree.width * 0.15, groundY - tree.height * 0.3, tree.width * 0.7, 0, Math.PI * 2);
+                    ctx.stroke();
+                    
+                    // Move tree
+                    tree.x -= gameSpeed * 0.7;
+                    
+                    // Remove tree if off screen
+                    if (tree.x + tree.width < 0) {
+                        trees.splice(i, 1);
+                    }
+                }
+            }
+            
+            // Draw clouds/crows
+            function drawClouds() {
+                // Add new clouds/crows
+                cloudTimer++;
+                if (cloudTimer > cloudInterval) {
+                    clouds.push({
+                        x: canvas.width,
+                        y: 50 + Math.random() * 150,
+                        width: 40 + Math.random() * 40,
+                        speed: 1 + Math.random() * 2,
+                        type: Math.random() > 0.5 ? 'cloud' : 'crow'
+                    });
+                    cloudTimer = 0;
+                    cloudInterval = 100 + Math.random() * 100;
+                }
+                
+                // Draw and update clouds/crows
+                const isDark = document.body.classList.contains('dark-mode');
+                
+                for (let i = clouds.length - 1; i >= 0; i--) {
+                    const cloud = clouds[i];
+                    
+                    if (cloud.type === 'cloud') {
+                        // Draw cloud
+                        ctx.fillStyle = isDark ? '#444' : '#fff';
+                        ctx.beginPath();
+                        ctx.arc(cloud.x, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
+                        ctx.arc(cloud.x + cloud.width * 0.4, cloud.y, cloud.width * 0.4, 0, Math.PI * 2);
+                        ctx.arc(cloud.x + cloud.width * 0.8, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Cloud outline
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(cloud.x, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
+                        ctx.arc(cloud.x + cloud.width * 0.4, cloud.y, cloud.width * 0.4, 0, Math.PI * 2);
+                        ctx.arc(cloud.x + cloud.width * 0.8, cloud.y, cloud.width * 0.3, 0, Math.PI * 2);
+                        ctx.stroke();
+                    } else {
+                        // Draw crow
+                        ctx.fillStyle = '#000';
+                        ctx.beginPath();
+                        ctx.arc(cloud.x, cloud.y, cloud.width * 0.2, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Crow body
+                        ctx.beginPath();
+                        ctx.ellipse(cloud.x + cloud.width * 0.3, cloud.y, cloud.width * 0.4, cloud.width * 0.2, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                        
+                        // Crow outline
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.arc(cloud.x, cloud.y, cloud.width * 0.2, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.ellipse(cloud.x + cloud.width * 0.3, cloud.y, cloud.width * 0.4, cloud.width * 0.2, 0, 0, Math.PI * 2);
+                        ctx.stroke();
+                        
+                        // Crow wings
+                        ctx.beginPath();
+                        ctx.moveTo(cloud.x + cloud.width * 0.1, cloud.y);
+                        ctx.lineTo(cloud.x + cloud.width * 0.1, cloud.y - cloud.width * 0.3);
+                        ctx.lineTo(cloud.x + cloud.width * 0.4, cloud.y - cloud.width * 0.1);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                    
+                    // Move cloud/crow
+                    cloud.x -= cloud.speed;
+                    
+                    // Remove if off screen
+                    if (cloud.x + cloud.width < 0) {
+                        clouds.splice(i, 1);
+                    }
+                }
+            }
+            
+            // Draw obstacles
+            function drawObstacles() {
+                // Add new obstacles
+                obstacleTimer++;
+                if (obstacleTimer > obstacleInterval && gameStarted) {
+                    const obstacleTypes = ['box', 'cactus'];
+                    const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+                    
+                    obstacles.push({
+                        x: canvas.width,
+                        width: type === 'box' ? 40 : 20 + Math.random() * 20,
+                        height: type === 'box' ? 40 : 50 + Math.random() * 30,
+                        type: type
+                    });
+                    obstacleTimer = 0;
+                    obstacleInterval = 80 + Math.random() * 100;
+                }
+                
+                // Draw and update obstacles
+                const groundY = canvas.height - groundHeight;
+                
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    const obstacle = obstacles[i];
+                    
+                    if (obstacle.type === 'box') {
+                        // Draw box
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(obstacle.x, groundY - obstacle.height, obstacle.width, obstacle.height);
+                        
+                        // Box outline
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(obstacle.x, groundY - obstacle.height, obstacle.width, obstacle.height);
+                        
+                        // Box details
+                        ctx.strokeStyle = '#fff';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(obstacle.x, groundY - obstacle.height);
+                        ctx.lineTo(obstacle.x + obstacle.width, groundY - obstacle.height + obstacle.height);
+                        ctx.moveTo(obstacle.x + obstacle.width, groundY - obstacle.height);
+                        ctx.lineTo(obstacle.x, groundY - obstacle.height + obstacle.height);
+                        ctx.stroke();
+                    } else {
+                        // Draw cactus
+                        ctx.fillStyle = '#2E8B57';
+                        ctx.fillRect(obstacle.x, groundY - obstacle.height, obstacle.width, obstacle.height);
+                        
+                        // Cactus outline
+                        ctx.strokeStyle = '#000';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(obstacle.x, groundY - obstacle.height, obstacle.width, obstacle.height);
+                        
+                        // Cactus arms
+                        ctx.fillRect(obstacle.x - 10, groundY - obstacle.height + 20, 15, 10);
+                        ctx.fillRect(obstacle.x + obstacle.width - 5, groundY - obstacle.height + 40, 15, 10);
+                    }
+                    
+                    // Move obstacle
+                    obstacle.x -= gameSpeed;
+                    
+                    // Check collision with dino
+                    if (
+                        dinoX + dinoWidth > obstacle.x &&
+                        dinoX < obstacle.x + obstacle.width &&
+                        dinoY + dinoHeight > groundY - obstacle.height &&
+                        dinoY < groundY
+                    ) {
+                        // Game over
+                        alert(`Game Over! Your score: ${Math.floor(score)}`);
+                        resetGame();
+                        return;
+                    }
+                    
+                    // Remove obstacle if off screen
+                    if (obstacle.x + obstacle.width < 0) {
+                        obstacles.splice(i, 1);
+                    }
+                }
+            }
+            
+            // Draw dinosaur
+            function drawDino() {
+                const groundY = canvas.height - groundHeight;
+                const isDark = document.body.classList.contains('dark-mode');
+                
+                // Dino color based on theme
+                const dinoColor = isDark ? '#00ff88' : '#228B22';
+                
+                // Draw dino body
+                ctx.fillStyle = dinoColor;
+                ctx.fillRect(dinoX, dinoY, dinoWidth, dinoHeight);
+                
+                // Draw dino legs
+                ctx.fillRect(dinoX - 10, dinoY + dinoHeight - 10, 15, 20);
+                ctx.fillRect(dinoX + dinoWidth - 5, dinoY + dinoHeight - 10, 15, 20);
+                
+                // Draw dino head
+                ctx.fillRect(dinoX + dinoWidth - 10, dinoY - 20, 30, 30);
+                
+                // Draw dino eyes
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(dinoX + dinoWidth + 5, dinoY - 10, 8, 8);
+                ctx.fillRect(dinoX + dinoWidth + 15, dinoY - 10, 8, 8);
+                
+                // Draw dino pupils
+                ctx.fillStyle = '#000';
+                ctx.fillRect(dinoX + dinoWidth + 7, dinoY - 8, 4, 4);
+                ctx.fillRect(dinoX + dinoWidth + 17, dinoY - 8, 4, 4);
+                
+                // Draw dino tail
+                ctx.fillStyle = dinoColor;
+                ctx.beginPath();
+                ctx.moveTo(dinoX, dinoY + 20);
+                ctx.lineTo(dinoX - 30, dinoY + 10);
+                ctx.lineTo(dinoX - 20, dinoY + 40);
+                ctx.closePath();
+                ctx.fill();
+                
+                // Dino outline
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(dinoX, dinoY, dinoWidth, dinoHeight);
+                ctx.strokeRect(dinoX - 10, dinoY + dinoHeight - 10, 15, 20);
+                ctx.strokeRect(dinoX + dinoWidth - 5, dinoY + dinoHeight - 10, 15, 20);
+                ctx.strokeRect(dinoX + dinoWidth - 10, dinoY - 20, 30, 30);
+                ctx.beginPath();
+                ctx.moveTo(dinoX, dinoY + 20);
+                ctx.lineTo(dinoX - 30, dinoY + 10);
+                ctx.lineTo(dinoX - 20, dinoY + 40);
+                ctx.closePath();
+                ctx.stroke();
+            }
+            
+            // Update game state
+            function updateGame() {
+                const groundY = canvas.height - groundHeight;
+                
+                // Handle jumping
+                if (isJumping) {
+                    dinoY += jumpVelocity;
+                    jumpVelocity += gravity;
+                    
+                    // Land on ground
+                    if (dinoY > groundY - dinoHeight) {
+                        dinoY = groundY - dinoHeight;
+                        isJumping = false;
+                        jumpVelocity = 0;
+                    }
+                }
+            }
+            
+            // Reset game
+            function resetGame() {
+                score = 0;
+                gameStarted = false;
+                gameSpeed = 5;
+                isJumping = false;
+                jumpVelocity = 0;
+                dinoY = canvas.height * 0.7;
+                obstacles = [];
+                trees = [];
+                clouds = [];
+                startMessage.style.display = 'block';
+            }
+            
+            // Event listeners for controls
+            jumpBtn.addEventListener('click', function() {
+                if (!gameStarted) {
+                    gameStarted = true;
+                    startMessage.style.display = 'none';
+                }
+                
+                if (!isJumping) {
+                    isJumping = true;
+                    jumpVelocity = -15;
+                }
+            });
+            
+            runBtn.addEventListener('click', function() {
+                if (!gameStarted) {
+                    gameStarted = true;
+                    startMessage.style.display = 'none';
+                }
+            });
+            
+            // Keyboard controls
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space' || e.code === 'ArrowUp') {
+                    if (!gameStarted) {
+                        gameStarted = true;
+                        startMessage.style.display = 'none';
+                    }
+                    
+                    if (!isJumping) {
+                        isJumping = true;
+                        jumpVelocity = -15;
+                    }
+                    e.preventDefault();
+                }
+                
+                if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+                    if (!gameStarted) {
+                        gameStarted = true;
+                        startMessage.style.display = 'none';
+                    }
+                    e.preventDefault();
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                dinoY = canvas.height * 0.7;
+            });
+            
+            // Start game loop
+            gameLoop();
+        }
+    </script>
+</body>
+</html>
